@@ -1,19 +1,19 @@
-import { Handler, model } from "dblink-core";
-import oracledb from "oracledb";
+import { Handler, model } from 'dblink-core';
+import oracledb from 'oracledb';
 export default class Oracle extends Handler {
     connectionPool;
     async init() {
         this.connectionPool = await oracledb.createPool({
             user: this.config.username,
             password: this.config.password,
-            connectString: `${this.config.host}:${this.config.port}/${this.config.database}`,
+            connectString: `${this.config.host}:${this.config.port}/${this.config.database}`
         });
     }
     async getConnection() {
         const conn = await oracledb.getConnection({
             user: this.config.username,
             password: this.config.password,
-            connectString: `${this.config.host}:${this.config.port}/${this.config.database}`,
+            connectString: `${this.config.host}:${this.config.port}/${this.config.database}`
         });
         return conn;
     }
@@ -61,10 +61,10 @@ export default class Oracle extends Handler {
         else {
             const conn = await this.connectionPool.getConnection();
             stream = conn.queryStream(query, dataArgs);
-            stream.on("end", function () {
+            stream.on('end', function () {
                 stream.destroy();
             });
-            stream.on("close", function () {
+            stream.on('close', function () {
                 conn.close();
             });
         }

@@ -1,6 +1,6 @@
-import { Handler, model, sql } from "dblink-core";
-import oracledb from "oracledb";
-import { Readable } from "stream";
+import { Handler, model, sql } from 'dblink-core';
+import oracledb from 'oracledb';
+import { Readable } from 'stream';
 
 /**
  * Oracle Handler
@@ -28,7 +28,7 @@ export default class Oracle extends Handler {
     this.connectionPool = await oracledb.createPool({
       user: this.config.username,
       password: this.config.password,
-      connectString: `${this.config.host}:${this.config.port}/${this.config.database}`,
+      connectString: `${this.config.host}:${this.config.port}/${this.config.database}`
     });
   }
 
@@ -42,7 +42,7 @@ export default class Oracle extends Handler {
     const conn = await oracledb.getConnection({
       user: this.config.username,
       password: this.config.password,
-      connectString: `${this.config.host}:${this.config.port}/${this.config.database}`,
+      connectString: `${this.config.host}:${this.config.port}/${this.config.database}`
     });
     return conn;
   }
@@ -101,11 +101,7 @@ export default class Oracle extends Handler {
    * @param {?oracledb.Connection} [connection]
    * @returns {Promise<model.ResultSet>}
    */
-  async run(
-    query: string,
-    dataArgs?: unknown[],
-    connection?: oracledb.Connection,
-  ): Promise<model.ResultSet> {
+  async run(query: string, dataArgs?: unknown[], connection?: oracledb.Connection): Promise<model.ResultSet> {
     dataArgs = dataArgs ?? [];
     let temp: oracledb.Result<Record<string, unknown>>;
     if (connection) {
@@ -132,10 +128,7 @@ export default class Oracle extends Handler {
    * @param {?oracledb.Connection} [connection]
    * @returns {Promise<model.ResultSet>}
    */
-  runStatement(
-    queryStmt: sql.Statement | sql.Statement[],
-    connection?: oracledb.Connection,
-  ): Promise<model.ResultSet> {
+  runStatement(queryStmt: sql.Statement | sql.Statement[], connection?: oracledb.Connection): Promise<model.ResultSet> {
     const { query, dataArgs } = this.prepareQuery(queryStmt);
     return this.run(query, dataArgs, connection);
   }
@@ -149,11 +142,7 @@ export default class Oracle extends Handler {
    * @param {?oracledb.Connection} [connection]
    * @returns {Promise<Readable>}
    */
-  async stream(
-    query: string,
-    dataArgs?: unknown[],
-    connection?: oracledb.Connection,
-  ): Promise<Readable> {
+  async stream(query: string, dataArgs?: unknown[], connection?: oracledb.Connection): Promise<Readable> {
     dataArgs = dataArgs ?? [];
     let stream: Readable;
     if (connection) {
@@ -162,10 +151,10 @@ export default class Oracle extends Handler {
       const conn = await this.connectionPool.getConnection();
 
       stream = conn.queryStream(query, dataArgs);
-      stream.on("end", function () {
+      stream.on('end', function () {
         stream.destroy();
       });
-      stream.on("close", function () {
+      stream.on('close', function () {
         conn.close();
       });
     }
@@ -179,10 +168,7 @@ export default class Oracle extends Handler {
    * @param {?oracledb.Connection} [connection]
    * @returns {Promise<Readable>}
    */
-  streamStatement(
-    queryStmt: sql.Statement | sql.Statement[],
-    connection?: oracledb.Connection,
-  ): Promise<Readable> {
+  streamStatement(queryStmt: sql.Statement | sql.Statement[], connection?: oracledb.Connection): Promise<Readable> {
     const { query, dataArgs } = this.prepareQuery(queryStmt);
     return this.stream(query, dataArgs, connection);
   }
