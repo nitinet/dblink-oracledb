@@ -1,6 +1,6 @@
-import { Handler, model, sql } from 'dblink-core';
-import oracledb from 'oracledb';
-import { Readable } from 'stream';
+import { Handler, model, sql } from "dblink-core";
+import oracledb from "oracledb";
+import { Readable } from "stream";
 
 /**
  * Oracle Handler
@@ -28,7 +28,7 @@ export default class Oracle extends Handler {
     this.connectionPool = await oracledb.createPool({
       user: this.config.username,
       password: this.config.password,
-      connectString: `${this.config.host}:${this.config.port}/${this.config.database}`
+      connectString: `${this.config.host}:${this.config.port}/${this.config.database}`,
     });
   }
 
@@ -39,10 +39,10 @@ export default class Oracle extends Handler {
    * @returns {Promise<oracledb.Connection>}
    */
   async getConnection(): Promise<oracledb.Connection> {
-    let conn = await oracledb.getConnection({
+    const conn = await oracledb.getConnection({
       user: this.config.username,
       password: this.config.password,
-      connectString: `${this.config.host}:${this.config.port}/${this.config.database}`
+      connectString: `${this.config.host}:${this.config.port}/${this.config.database}`,
     });
     return conn;
   }
@@ -54,7 +54,8 @@ export default class Oracle extends Handler {
    * @param {oracledb.Connection} conn
    * @returns {Promise<void>}
    */
-  async initTransaction(conn: oracledb.Connection): Promise<void> {
+  async initTransaction(): Promise<void> {
+    // conn: oracledb.Connection
     /* document why this async method 'initTransaction' is empty */
   }
 
@@ -100,13 +101,17 @@ export default class Oracle extends Handler {
    * @param {?oracledb.Connection} [connection]
    * @returns {Promise<model.ResultSet>}
    */
-  async run(query: string, dataArgs?: any[], connection?: oracledb.Connection): Promise<model.ResultSet> {
+  async run(
+    query: string,
+    dataArgs?: unknown[],
+    connection?: oracledb.Connection,
+  ): Promise<model.ResultSet> {
     dataArgs = dataArgs ?? [];
-    let temp: oracledb.Result<any>;
+    let temp: oracledb.Result<Record<string, unknown>>;
     if (connection) {
       temp = await connection.execute(query, dataArgs);
     } else {
-      let conn = await this.connectionPool.getConnection();
+      const conn = await this.connectionPool.getConnection();
       try {
         temp = await conn.execute(query, dataArgs);
       } finally {
@@ -114,7 +119,7 @@ export default class Oracle extends Handler {
       }
     }
 
-    let result = new model.ResultSet();
+    const result = new model.ResultSet();
     result.rows = temp.rows ?? [];
     result.rowCount = temp.rowsAffected ?? 0;
     return result;
@@ -127,8 +132,11 @@ export default class Oracle extends Handler {
    * @param {?oracledb.Connection} [connection]
    * @returns {Promise<model.ResultSet>}
    */
-  runStatement(queryStmt: sql.Statement | sql.Statement[], connection?: oracledb.Connection): Promise<model.ResultSet> {
-    let { query, dataArgs } = this.prepareQuery(queryStmt);
+  runStatement(
+    queryStmt: sql.Statement | sql.Statement[],
+    connection?: oracledb.Connection,
+  ): Promise<model.ResultSet> {
+    const { query, dataArgs } = this.prepareQuery(queryStmt);
     return this.run(query, dataArgs, connection);
   }
 
@@ -141,19 +149,23 @@ export default class Oracle extends Handler {
    * @param {?oracledb.Connection} [connection]
    * @returns {Promise<Readable>}
    */
-  async stream(query: string, dataArgs?: any[], connection?: oracledb.Connection): Promise<Readable> {
+  async stream(
+    query: string,
+    dataArgs?: unknown[],
+    connection?: oracledb.Connection,
+  ): Promise<Readable> {
     dataArgs = dataArgs ?? [];
     let stream: Readable;
     if (connection) {
       stream = connection.queryStream(query, dataArgs);
     } else {
-      let conn = await this.connectionPool.getConnection();
+      const conn = await this.connectionPool.getConnection();
 
       stream = conn.queryStream(query, dataArgs);
-      stream.on('end', function () {
+      stream.on("end", function () {
         stream.destroy();
       });
-      stream.on('close', function () {
+      stream.on("close", function () {
         conn.close();
       });
     }
@@ -167,8 +179,11 @@ export default class Oracle extends Handler {
    * @param {?oracledb.Connection} [connection]
    * @returns {Promise<Readable>}
    */
-  streamStatement(queryStmt: sql.Statement | sql.Statement[], connection?: oracledb.Connection): Promise<Readable> {
-    let { query, dataArgs } = this.prepareQuery(queryStmt);
+  streamStatement(
+    queryStmt: sql.Statement | sql.Statement[],
+    connection?: oracledb.Connection,
+  ): Promise<Readable> {
+    const { query, dataArgs } = this.prepareQuery(queryStmt);
     return this.stream(query, dataArgs, connection);
   }
 }

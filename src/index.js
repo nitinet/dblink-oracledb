@@ -1,23 +1,23 @@
-import { Handler, model } from 'dblink-core';
-import oracledb from 'oracledb';
+import { Handler, model } from "dblink-core";
+import oracledb from "oracledb";
 export default class Oracle extends Handler {
     connectionPool;
     async init() {
         this.connectionPool = await oracledb.createPool({
             user: this.config.username,
             password: this.config.password,
-            connectString: `${this.config.host}:${this.config.port}/${this.config.database}`
+            connectString: `${this.config.host}:${this.config.port}/${this.config.database}`,
         });
     }
     async getConnection() {
-        let conn = await oracledb.getConnection({
+        const conn = await oracledb.getConnection({
             user: this.config.username,
             password: this.config.password,
-            connectString: `${this.config.host}:${this.config.port}/${this.config.database}`
+            connectString: `${this.config.host}:${this.config.port}/${this.config.database}`,
         });
         return conn;
     }
-    async initTransaction(conn) {
+    async initTransaction() {
     }
     async commit(conn) {
         return conn.commit();
@@ -35,7 +35,7 @@ export default class Oracle extends Handler {
             temp = await connection.execute(query, dataArgs);
         }
         else {
-            let conn = await this.connectionPool.getConnection();
+            const conn = await this.connectionPool.getConnection();
             try {
                 temp = await conn.execute(query, dataArgs);
             }
@@ -43,13 +43,13 @@ export default class Oracle extends Handler {
                 conn.close();
             }
         }
-        let result = new model.ResultSet();
+        const result = new model.ResultSet();
         result.rows = temp.rows ?? [];
         result.rowCount = temp.rowsAffected ?? 0;
         return result;
     }
     runStatement(queryStmt, connection) {
-        let { query, dataArgs } = this.prepareQuery(queryStmt);
+        const { query, dataArgs } = this.prepareQuery(queryStmt);
         return this.run(query, dataArgs, connection);
     }
     async stream(query, dataArgs, connection) {
@@ -59,19 +59,19 @@ export default class Oracle extends Handler {
             stream = connection.queryStream(query, dataArgs);
         }
         else {
-            let conn = await this.connectionPool.getConnection();
+            const conn = await this.connectionPool.getConnection();
             stream = conn.queryStream(query, dataArgs);
-            stream.on('end', function () {
+            stream.on("end", function () {
                 stream.destroy();
             });
-            stream.on('close', function () {
+            stream.on("close", function () {
                 conn.close();
             });
         }
         return stream;
     }
     streamStatement(queryStmt, connection) {
-        let { query, dataArgs } = this.prepareQuery(queryStmt);
+        const { query, dataArgs } = this.prepareQuery(queryStmt);
         return this.stream(query, dataArgs, connection);
     }
 }
