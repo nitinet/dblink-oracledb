@@ -19,17 +19,25 @@ export default class Oracle extends Handler {
   connectionPool!: oracledb.Pool;
 
   /**
+   * Creates an instance of Mysql.
+   *
+   * @constructor
+   * @param {mysql.PoolConfig} config
+   */
+  constructor(config: oracledb.PoolAttributes) {
+    super(config);
+
+    this.config = config;
+  }
+
+  /**
    * Handler initialisation
    *
    * @async
    * @returns {Promise<void>}
    */
   async init(): Promise<void> {
-    this.connectionPool = await oracledb.createPool({
-      user: this.config.username,
-      password: this.config.password,
-      connectString: `${this.config.host}:${this.config.port}/${this.config.database}`
-    });
+    this.connectionPool = await oracledb.createPool(this.config as oracledb.PoolAttributes);
   }
 
   /**
@@ -39,11 +47,7 @@ export default class Oracle extends Handler {
    * @returns {Promise<oracledb.Connection>}
    */
   async getConnection(): Promise<oracledb.Connection> {
-    const conn = await oracledb.getConnection({
-      user: this.config.username,
-      password: this.config.password,
-      connectString: `${this.config.host}:${this.config.port}/${this.config.database}`
-    });
+    const conn = await oracledb.getConnection(this.config as oracledb.ConnectionAttributes);
     return conn;
   }
 
@@ -117,7 +121,6 @@ export default class Oracle extends Handler {
 
     const result = new model.ResultSet();
     result.rows = temp.rows ?? [];
-    result.rowCount = temp.rowsAffected ?? 0;
     return result;
   }
 
